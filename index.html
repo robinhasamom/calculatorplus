@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Custom Calculator</title>
+    <style>
+        body {
+            background-color: #1c1c1e;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .calculator {
+            background-color: #000000;
+            padding: 20px;
+            border-radius: 20px;
+            width: 850px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .display {
+            width: 100%;
+            height: 80px;
+            background-color: transparent;
+            border: none;
+            color: #ffffff;
+            text-align: right;
+            font-size: 3rem;
+            font-weight: 300;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        /* Keyboard mode active indicator styling */
+        .display.keyboard-active {
+            border-bottom: 2px dashed #30d158;
+            caret-color: #30d158;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            height: 50px;
+            font-size: 1.1rem;
+            font-weight: 400;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease, opacity 0.1s ease;
+        }
+
+        button:active {
+            opacity: 0.6;
+        }
+
+        /* Scientific Keys (Dark Gray) */
+        .sci {
+            background-color: #2c2c2e;
+            color: #ffffff;
+            font-size: 1.1rem;
+        }
+
+        /* Active toggle key state styling */
+        .sci.active-toggle {
+            background-color: #30d158 !important;
+            color: #000000 !important;
+            font-weight: bold;
+        }
+
+        /* Standard Numbers (Medium Gray) */
+        .num {
+            background-color: #505054;
+            color: #ffffff;
+            font-size: 1.3rem;
+        }
+
+        /* Top Actions (Light Gray) */
+        .top-action {
+            background-color: #a5a5a5;
+            color: #000000;
+            font-size: 1.2rem;
+        }
+
+        /* Operator Keys (Orange) */
+        .op {
+            background-color: #ff9f0a;
+            color: #ffffff;
+            font-size: 1.5rem;
+        }
+
+        .zero {
+            grid-column: span 2;
+            text-align: left;
+            padding-left: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <input type="text" class="display" id="screen" value="0" readonly>
+
+    <div class="grid">
+        <!-- Row 1 -->
+        <button class="sci" onclick="input('(')">(</button>
+        <button class="sci" onclick="input(')')">)</button>
+        <button class="sci" onclick="memClear()">mc</button>
+        <button class="sci" onclick="memAdd()">m+</button>
+        <button class="sci" onclick="memSub()">m-</button>
+        <button class="sci" onclick="memRecall()">mr</button>
+        <button class="top-action" onclick="clearScreen()">C</button>
+        <button class="top-action" onclick="backspace()">&#9003;</button> 
+        <button class="top-action" onclick="toggleSign()">+/-</button>
+        <button class="op" onclick="input('/')">&divide;</button>
+
+        <!-- Row 2 -->
+        <button class="sci" onclick="operation('x2')">x&sup2;</button>
+        <button class="sci" onclick="operation('x3')">x&sup3;</button>
+        <button class="sci" onclick="input('**')">x<sup>y</sup></button>
+        <button class="sci" style="visibility: hidden;"></button> 
+        <button class="sci" onclick="operation('10x')">10<sup>x</sup></button>
+        <button class="sci" onclick="percentage()">%</button> 
+        <button class="num" onclick="input('7')">7</button>
+        <button class="num" onclick="input('8')">8</button>
+        <button class="num" onclick="input('9')">9</button>
+        <button class="op" onclick="input('*')">&times;</button>
+
+        <!-- Row 3 -->
+        <button class="sci" onclick="operation('1/x')">1/x</button>
+        <button class="sci" onclick="operation('sqrt')">&sup2;&radic;x</button>
+        <button class="sci" onclick="operation('cbrt')">&sup3;&radic;x</button>
+        <button class="sci" onclick="input('** (1/')"><sup>y</sup>&radic;x</button>
+        <button class="sci" onclick="operation('log10')">log<sub>10</sub></button>
+        <button class="sci" onclick="operation('logX')">log<sub>x</sub></button>
+        <button class="num" onclick="input('4')">4</button>
+        <button class="num" onclick="input('5')">5</button>
+        <button class="num" onclick="input('6')">6</button>
+        <button class="op" onclick="input('-')">&minus;</button>
+
+        <!-- Row 4 -->
+        <button class="sci" onclick="operation('factorial')">x!</button>
+        <button class="sci active-toggle" id="modeBtn" onclick="toggleInputMode()" style="font-size: 0.85rem;">Buttons 🖱️</button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="num" onclick="input('1')">1</button>
+        <button class="num" onclick="input('2')">2</button>
+        <button class="num" onclick="input('3')">3</button>
+        <button class="op" onclick="input('+')">+</button>
+
+        <!-- Row 5 -->
+        <button class="sci" onclick="input('Math.PI')">&pi;</button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="sci" style="visibility: hidden;"></button>
+        <button class="num zero" onclick="input('0')">0</button>
+        <button class="num" onclick="input('.')">.</button>
+        <button class="op" onclick="calculate()">=</button>
+    </div>
+</div>
+
+<script>
+    let screen = document.getElementById('screen');
+    let modeBtn = document.getElementById('modeBtn');
+    let memory = 0;
+    let isNewCalculation = false;
+    let isKeyboardMode = false;
+
+    // Start with class setup correctly matching active UI mode string indicators
+    modeBtn.classList.remove('active-toggle');
+
+    function toggleInputMode() {
+        isKeyboardMode = !isKeyboardMode;
+        if (isKeyboardMode) {
+            screen.removeAttribute('readonly');
+            screen.classList.add('keyboard-active');
+            modeBtn.classList.add('active-toggle');
+            modeBtn.innerHTML = "Keyboard ⌨️";
+            screen.focus();
+        } else {
+            screen.setAttribute('readonly', true);
+            screen.classList.remove('keyboard-active');
+            modeBtn.classList.remove('active-toggle');
+            modeBtn.innerHTML = "Buttons 🖱️";
+        }
+    }
+
+    screen.addEventListener('keydown', function(event) {
+        if (isKeyboardMode && event.key === 'Enter') {
+            calculate();
+        }
+    });
+
+    function input(value) {
+        if (isKeyboardMode) return; 
+        if (screen.value === '0' || isNewCalculation) {
+            screen.value = value;
+            isNewCalculation = false;
+        } else {
+            screen.value += value;
+        }
+    }
+
+    function clearScreen() {
+        screen.value = '0';
+    }
+
+    function backspace() {
+        if (screen.value.length > 1) {
+            screen.value = screen.value.slice(0, -1);
+        } else {
+            screen.value = '0';
+        }
+        isNewCalculation = false;
+    }
+
+    function toggleSign() {
+        if(screen.value !== '0') {
+            if(screen.value.startsWith('-')) {
+                screen.value = screen.value.substring(1);
+            } else {
+                screen.value = '-' + screen.value;
+            }
+        }
+    }
+
+    function percentage() {
+        try {
+            screen.value = eval(screen.value) / 100;
+        } catch {
+            screen.value = "Error";
+        }
+    }
+
+    function operation(type) {
+        try {
+            let currentVal = eval(screen.value);
+            switch(type) {
+                case 'x2': screen.value = Math.pow(currentVal, 2); break;
+                case 'x3': screen.value = Math.pow(currentVal, 3); break;
+                case '10x': screen.value = Math.pow(10, currentVal); break;
+                case '1/x': screen.value = 1 / currentVal; break;
+                case 'sqrt': screen.value = Math.sqrt(currentVal); break;
+                case 'cbrt': screen.value = Math.cbrt(currentVal); break;
+                case 'log10': screen.value = Math.log10(currentVal); break;
+                case 'logX': 
+                    let base = prompt("Enter the log base value (e.g., 2, 8, etc.):");
+                    if (base && !isNaN(base) && base > 0 && base != 1) {
+                        screen.value = Math.log(currentVal) / Math.log(eval(base));
+                    } else {
+                        alert("Invalid base entered.");
+                        return;
+                    }
+                    break;
+                case 'factorial': screen.value = getFactorial(currentVal); break;
+            }
+            isNewCalculation = true;
+        } catch {
+            screen.value = "Error";
+        }
+    }
+
+    function getFactorial(n) {
+        if (n < 0) return "Error";
+        if (n === 0 || n === 1) return 1;
+        let result = 1;
+        for (let i = 2; i <= n; i++) result *= i;
+        return result;
+    }
+
+    function memClear() { memory = 0; }
+    function memRecall() { screen.value = memory; isNewCalculation = true; }
+    function memAdd() { try { memory += eval(screen.value); } catch { screen.value = "Error"; } }
+    function memSub() { try { memory -= eval(screen.value); } catch { screen.value = "Error"; } }
+
+    function calculate() {
+        try {
+            let expression = screen.value;
+            expression = expression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+            let result = eval(expression);
+            screen.value = result;
+            isNewCalculation = true;
+        } catch {
+            screen.value = "Error";
+        }
+    }
+</script>
+
+</body>
+</html>
